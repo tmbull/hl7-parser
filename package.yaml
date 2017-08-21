@@ -20,6 +20,7 @@ library:
   exposed-modules:
   - Lib
   dependencies:
+  - string-conversions
   - text
 
 executables:

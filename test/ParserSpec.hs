@@ -9,36 +9,130 @@ import Lib
 
 spec :: Spec
 spec = do
-    describe "The Parser" $ do
-        it "can parse a message" $ do
+    describe "MSH Parser" $ do
+        it "can parse an MSH segment" $ do
             let val =
                     runParser
                         parseMSH
                         ""
-                        "MSH|^~\&|MegaReg|XYZHospC|SuperOE|XYZImgCtr|20060529090131-0500||ADT^A01^ADT_A01|01052901|P|2.5"
+                        "MSH|^~\\&|MegaReg|XYZHospC|SuperOE|XYZImgCtr|20060529090131-0500||ADT^A01^ADT_A01|01052901|P|2.5"
             val `shouldBe`
                 (Right $
                  MSH
-                 { hl7FieldSeperator = '|'
-                 , hl7ComponentSeperator = '^'
-                 , hl7SubcomponentSeperator = '\\'
-                 , hl7RepetitionSeperator = '&'
+                 { mshEncodingChars =
+                       EncodingCharacters
+                       { hl7FieldSeperator = '|'
+                       , hl7ComponentSeperator = '^'
+                       , hl7SubcomponentSeperator = '&'
+                       , hl7RepetitionSeperator = '~'
+                       , hl7EscapeCharacter = '\\'
+                       }
                  , hl7MessageType = ADT
                  , mshFields =
-                       [ FieldValue "|"
-                       , FieldValue "^\\&"
-                       , FieldValue "MegaReg"
-                       , FieldValue "XYZHospC"
-                       , FieldValue "SuperOE"
-                       , FieldValue "XYZImgCtr"
-                       , FieldValue "20060529090131-0500|"
-                       , Components
-                             [ ComponentValue "ADT"
-                             , ComponentValue "A01"
-                             , ComponentValue "ADT_A01"
-                             , ComponentValue "01052901"
-                             , ComponentValue "P"
-                             , ComponentValue "2.5"
-                             ]
+                       [ Field
+                         {components = [Component {subcomponents = ["|"]}]}
+                       , Field
+                         {components = [Component {subcomponents = ["^~\\&"]}]}
+                       , Field
+                         { components =
+                               [Component {subcomponents = ["MegaReg"]}]
+                         }
+                       , Field
+                         { components =
+                               [Component {subcomponents = ["XYZHospC"]}]
+                         }
+                       , Field
+                         { components =
+                               [Component {subcomponents = ["SuperOE"]}]
+                         }
+                       , Field
+                         { components =
+                               [Component {subcomponents = ["XYZImgCtr"]}]
+                         }
+                       , Field
+                         { components =
+                               [ Component
+                                 {subcomponents = ["20060529090131-0500"]}
+                               ]
+                         }
+                       , Field {components = [Component {subcomponents = []}]}
+                       , Field
+                         { components =
+                               [ Component {subcomponents = ["ADT"]}
+                               , Component {subcomponents = ["A01"]}
+                               , Component {subcomponents = ["ADT_A01"]}
+                               ]
+                         }
+                       , Field
+                         { components =
+                               [Component {subcomponents = ["01052901"]}]
+                         }
+                       , Field
+                         {components = [Component {subcomponents = ["P"]}]}
+                       , Field
+                         {components = [Component {subcomponents = ["2.5"]}]}
+                       ]
+                 })
+        it "can parse a segment containing an escape character" $ do
+            let val =
+                    runParser
+                        parseMSH
+                        ""
+                        "MSH|^~\\&|MegaReg|XYZHospC|SuperOE|XYZImgCtr|20060529090131/R/0500||ADT^A01^ADT_A01|01052901|P|2.5"
+            val `shouldBe`
+                (Right $
+                 MSH
+                 { mshEncodingChars =
+                       EncodingCharacters
+                       { hl7FieldSeperator = '|'
+                       , hl7ComponentSeperator = '^'
+                       , hl7SubcomponentSeperator = '&'
+                       , hl7RepetitionSeperator = '~'
+                       , hl7EscapeCharacter = '\\'
+                       }
+                 , hl7MessageType = ADT
+                 , mshFields =
+                       [ Field
+                         {components = [Component {subcomponents = ["|"]}]}
+                       , Field
+                         {components = [Component {subcomponents = ["^~\\&"]}]}
+                       , Field
+                         { components =
+                               [Component {subcomponents = ["MegaReg"]}]
+                         }
+                       , Field
+                         { components =
+                               [Component {subcomponents = ["XYZHospC"]}]
+                         }
+                       , Field
+                         { components =
+                               [Component {subcomponents = ["SuperOE"]}]
+                         }
+                       , Field
+                         { components =
+                               [Component {subcomponents = ["XYZImgCtr"]}]
+                         }
+                       , Field
+                         { components =
+                               [ Component
+                                 {subcomponents = ["20060529090131~0500"]}
+                               ]
+                         }
+                       , Field {components = [Component {subcomponents = []}]}
+                       , Field
+                         { components =
+                               [ Component {subcomponents = ["ADT"]}
+                               , Component {subcomponents = ["A01"]}
+                               , Component {subcomponents = ["ADT_A01"]}
+                               ]
+                         }
+                       , Field
+                         { components =
+                               [Component {subcomponents = ["01052901"]}]
+                         }
+                       , Field
+                         {components = [Component {subcomponents = ["P"]}]}
+                       , Field
+                         {components = [Component {subcomponents = ["2.5"]}]}
                        ]
                  })
