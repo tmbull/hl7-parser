@@ -9,7 +9,36 @@ import Lib
 
 spec :: Spec
 spec = do
+    describe "unescape logic" $ do
+        it "Should work" $ do
+            let val =
+                    runParser
+                        (unescape
+                        EncodingCharacters
+                        { hl7FieldSeperator = '|'
+                        , hl7ComponentSeperator = '^'
+                        , hl7SubcomponentSeperator = '&'
+                        , hl7RepetitionSeperator = '~'
+                        , hl7EscapeCharacter = '\\'
+                        })
+                        ""
+                        "\\R\\"
+            val `shouldBe` (Right "~")
     describe "MSH Parser" $ do
+        it "should work on a longer string" $ do
+            let val =
+                    runParser
+                        (unescape
+                        EncodingCharacters
+                        { hl7FieldSeperator = '|'
+                        , hl7ComponentSeperator = '^'
+                        , hl7SubcomponentSeperator = '&'
+                        , hl7RepetitionSeperator = '~'
+                        , hl7EscapeCharacter = '\\'
+                        })
+                        ""
+                        "abc\\R\\123"
+            val `shouldBe` Right "abc~123"
         it "can parse an MSH segment" $ do
             let val =
                     runParser
@@ -78,7 +107,7 @@ spec = do
                     runParser
                         parseMSH
                         ""
-                        "MSH|^~\\&|MegaReg|XYZHospC|SuperOE|XYZImgCtr|20060529090131/R/0500||ADT^A01^ADT_A01|01052901|P|2.5"
+                        "MSH|^~\\&|MegaReg|XYZHospC|SuperOE|XYZImgCtr|20060529090131\\R\\0500||ADT^A01^ADT_A01|01052901|P|2.5"
             val `shouldBe`
                 (Right $
                  MSH
